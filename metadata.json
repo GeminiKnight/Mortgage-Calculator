@@ -1,0 +1,5 @@
+{
+  "name": "Mortgage Calculator",
+  "description": "A comprehensive mortgage calculator supporting Commercial, Provident Fund, and Combination loans with detailed amortization schedules.",
+  "requestFramePermissions": []
+}
