@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { RepaymentMethod, LoanResultDetail, LoanParams } from '../types';
 import { calculatePrepayment } from '../utils/calculator';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Sparkles, X, Loader2 } from 'lucide-react';
+import { GoogleGenAI } from "@google/genai";
 
 interface ResultViewProps {
   results: Record<RepaymentMethod, LoanResultDetail>;
@@ -17,6 +18,12 @@ export const ResultView: React.FC<ResultViewProps> = ({ results, params }) => {
   const [prepayAmount, setPrepayAmount] = useState('');
   const [showPrepayResult, setShowPrepayResult] = useState(false);
   const [prepayResultData, setPrepayResultData] = useState<any>(null);
+
+  // AI Analysis States
+  const [showAIModal, setShowAIModal] = useState(false);
+  const [aiInputs, setAIInputs] = useState({ income: '', pfMonthly: '', pfBalance: '' });
+  const [aiResult, setAIResult] = useState('');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const currentResult = results[method];
   
@@ -37,6 +44,147 @@ export const ResultView: React.FC<ResultViewProps> = ({ results, params }) => {
     const result = calculatePrepayment(params, method, Number(prepayAmount) * 10000);
     setPrepayResultData(result);
     setShowPrepayResult(true);
+  };
+
+  const handleAIAnalyze = async () => {
+      if (!aiInputs.income || !aiInputs.pfMonthly || !aiInputs.pfBalance) {
+          alert("请填写完整的财务信息");
+          return;
+      }
+
+      setIsAnalyzing(true);
+      setAIResult('');
+
+      try {
+          const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+          
+          const prompt = `
+            作为一名专业的金融顾问，请根据以下房贷和家庭财务数据进行分析：
+
+            【房贷信息】
+            - 贷款总额：${fmtWan(currentResult.loanAmount)}万元
+            - 贷款年限：${currentResult.years}年
+            - 每月应还：${fmt(currentResult.monthlyPayment)}元
+            - 贷款类型：${params.loanType === 'COMMERCIAL' ? '商业贷款' : params.loanType === 'PROVIDENT' ? '公积金贷款' : '组合贷款'}
+            - 还款方式：${method === RepaymentMethod.EQUAL_INTEREST ? '等额本息' : '等额本金'}
+
+            【家庭财务】
+            - 家庭月收入：${aiInputs.income}元
+            - 月公积金缴纳：${aiInputs.pfMonthly}元
+            - 公积金余额：${aiInputs.pfBalance}万元
+
+            请从以下维度进行分析并给出建议（请使用中文，格式清晰，语气专业且贴心）：
+            1. **还款压力评估**：计算家庭收入+公积金对月供的覆盖情况，评估压力等级。
+            2. **公积金支撑能力**：当前的公积金余额加上每月缴纳，能支持多久的月供，或者每月能抵扣多少。
+            3. **风险提示**：考虑可能的失业风险或利率波动（如果是LPR）对生活质量的影响。
+            4. **财务规划建议**：给出具体的建议，如是否需要提前还款、预留多少应急资金等。
+          `;
+
+          const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: prompt,
+          });
+
+          setAIResult(response.text || "分析未能生成，请重试。");
+      } catch (error) {
+          console.error("AI Analysis Error:", error);
+          setAIResult("AI分析服务暂时不可用，请检查网络或稍后再试。");
+      } finally {
+          setIsAnalyzing(false);
+      }
+  };
+
+  // Render AI Modal
+  const renderAIModal = () => {
+      if (!showAIModal) return null;
+      return (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+              <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowAIModal(false)}></div>
+              <div className="bg-white w-full sm:max-w-lg rounded-t-xl sm:rounded-xl z-10 animate-in slide-in-from-bottom duration-300 shadow-2xl flex flex-col max-h-[90vh]">
+                  <div className="flex justify-between items-center p-4 border-b border-gray-100 sticky top-0 bg-white rounded-t-xl z-20">
+                      <div className="flex items-center space-x-2">
+                          <Sparkles className="w-5 h-5 text-purple-600 fill-purple-100" />
+                          <h2 className="text-lg font-bold text-gray-800">AI 还款压力分析</h2>
+                      </div>
+                      <button onClick={() => setShowAIModal(false)} className="p-1 hover:bg-gray-100 rounded-full">
+                          <X className="w-6 h-6 text-gray-500" />
+                      </button>
+                  </div>
+                  
+                  <div className="p-5 overflow-y-auto">
+                      {!aiResult && !isAnalyzing && (
+                          <div className="space-y-4">
+                              <p className="text-sm text-gray-500 bg-purple-50 p-3 rounded-lg border border-purple-100">
+                                  请输入您的家庭财务状况，AI 将结合当前的房贷计算结果，为您提供个性化的还款压力分析和财务建议。
+                              </p>
+                              
+                              <div className="space-y-3">
+                                  <div>
+                                      <label className="block text-sm font-medium text-gray-700 mb-1">家庭月收入 (元)</label>
+                                      <input 
+                                          type="number" 
+                                          value={aiInputs.income}
+                                          onChange={e => setAIInputs({...aiInputs, income: e.target.value})}
+                                          className="w-full p-3 border border-gray-200 rounded-lg outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
+                                          placeholder="例如：20000"
+                                      />
+                                  </div>
+                                  <div>
+                                      <label className="block text-sm font-medium text-gray-700 mb-1">月公积金缴纳总额 (元)</label>
+                                      <input 
+                                          type="number" 
+                                          value={aiInputs.pfMonthly}
+                                          onChange={e => setAIInputs({...aiInputs, pfMonthly: e.target.value})}
+                                          className="w-full p-3 border border-gray-200 rounded-lg outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
+                                          placeholder="个人+公司缴纳总和"
+                                      />
+                                  </div>
+                                  <div>
+                                      <label className="block text-sm font-medium text-gray-700 mb-1">公积金账户余额 (万元)</label>
+                                      <input 
+                                          type="number" 
+                                          value={aiInputs.pfBalance}
+                                          onChange={e => setAIInputs({...aiInputs, pfBalance: e.target.value})}
+                                          className="w-full p-3 border border-gray-200 rounded-lg outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
+                                          placeholder="例如：10.5"
+                                      />
+                                  </div>
+                              </div>
+
+                              <button 
+                                  onClick={handleAIAnalyze}
+                                  className="w-full py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold rounded-lg shadow-md hover:shadow-lg active:scale-[0.98] transition-all flex items-center justify-center"
+                              >
+                                  <Sparkles className="w-5 h-5 mr-2" />
+                                  开始智能分析
+                              </button>
+                          </div>
+                      )}
+
+                      {isAnalyzing && (
+                          <div className="flex flex-col items-center justify-center py-12 space-y-4">
+                              <Loader2 className="w-10 h-10 text-purple-600 animate-spin" />
+                              <p className="text-gray-600 font-medium">AI 正在分析您的财务状况...</p>
+                          </div>
+                      )}
+
+                      {aiResult && (
+                          <div className="animate-in fade-in duration-500">
+                              <div className="prose prose-purple prose-sm max-w-none text-gray-800 leading-relaxed whitespace-pre-wrap">
+                                  {aiResult}
+                              </div>
+                              <button 
+                                  onClick={() => setAIResult('')}
+                                  className="mt-6 w-full py-3 border border-gray-200 text-gray-600 font-medium rounded-lg hover:bg-gray-50 transition-colors"
+                              >
+                                  重新分析
+                              </button>
+                          </div>
+                      )}
+                  </div>
+              </div>
+          </div>
+      );
   };
 
   if (showPrepayResult && prepayResultData) {
@@ -87,7 +235,9 @@ export const ResultView: React.FC<ResultViewProps> = ({ results, params }) => {
   }
 
   return (
-    <div className="bg-gray-50 pb-4">
+    <div className="bg-gray-50 pb-4 relative">
+      {renderAIModal()}
+      
       {/* Tabs for Result Type */}
       <div className="flex bg-white mb-4 shadow-sm sticky top-0 z-10">
         <button
@@ -134,6 +284,17 @@ export const ResultView: React.FC<ResultViewProps> = ({ results, params }) => {
                : `每月还款递减${fmt(currentResult.monthlyDecrease || 0)}元，本金不变，利息递减。`}
           </div>
         </div>
+
+        {/* AI Analysis Button */}
+        <button 
+          onClick={() => setShowAIModal(true)}
+          className="w-full py-3 bg-white border border-purple-200 rounded-xl shadow-sm flex items-center justify-center space-x-2 active:bg-purple-50 transition-colors group"
+        >
+            <div className="bg-purple-100 p-1.5 rounded-full group-hover:bg-purple-200 transition-colors">
+                <Sparkles className="w-4 h-4 text-purple-600" />
+            </div>
+            <span className="text-gray-800 font-bold text-sm">AI 分析还款压力与规划建议</span>
+        </button>
 
         {/* Breakdown Summary */}
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
