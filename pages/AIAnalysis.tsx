@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLoanData } from '../context/LoanContext';
 import { RepaymentMethod } from '../types';
-import { ChevronLeft, Sparkles, Loader2, StopCircle } from 'lucide-react';
+import { ChevronLeft, Sparkles, Loader2 } from 'lucide-react';
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
