@@ -37,8 +37,8 @@ export const AIAnalysis: React.FC = () => {
         setAIResult('');
 
         try {
-            // Initialization with named parameter apiKey from process.env
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+            // Use import.meta.env.VITE_API_KEY as configured in vite.config.ts
+            const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
             
             const prompt = `
             作为一名专业的金融顾问，请根据以下房贷和家庭财务数据进行分析：
@@ -84,7 +84,7 @@ export const AIAnalysis: React.FC = () => {
                     <ChevronLeft className="w-6 h-6 text-gray-600" />
                 </button>
                 <div className="flex items-center space-x-1">
-                    <Sparkles className="w-4 h-4 text-purple-600" />
+                    <Sparkles className="w-4 h-4 text-red-500" />
                     <h2 className="text-lg font-bold text-gray-800">智能分析</h2>
                 </div>
             </div>
@@ -99,7 +99,7 @@ export const AIAnalysis: React.FC = () => {
                                     type="number" 
                                     value={aiInputs.income}
                                     onChange={e => setAIInputs({...aiInputs, income: e.target.value})}
-                                    className="w-full p-3 border border-gray-200 rounded-lg outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
+                                    className="w-full p-3 border border-gray-200 rounded-lg outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all"
                                     placeholder="例如：20000"
                                 />
                             </div>
@@ -109,7 +109,7 @@ export const AIAnalysis: React.FC = () => {
                                     type="number" 
                                     value={aiInputs.pfMonthly}
                                     onChange={e => setAIInputs({...aiInputs, pfMonthly: e.target.value})}
-                                    className="w-full p-3 border border-gray-200 rounded-lg outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
+                                    className="w-full p-3 border border-gray-200 rounded-lg outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all"
                                     placeholder="个人+公司缴纳总和"
                                 />
                             </div>
@@ -119,7 +119,7 @@ export const AIAnalysis: React.FC = () => {
                                     type="number" 
                                     value={aiInputs.pfBalance}
                                     onChange={e => setAIInputs({...aiInputs, pfBalance: e.target.value})}
-                                    className="w-full p-3 border border-gray-200 rounded-lg outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
+                                    className="w-full p-3 border border-gray-200 rounded-lg outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all"
                                     placeholder="例如：10.5"
                                 />
                             </div>
@@ -127,7 +127,7 @@ export const AIAnalysis: React.FC = () => {
                             <button 
                                 onClick={handleAnalyze}
                                 disabled={isAnalyzing}
-                                className="w-full py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold rounded-lg shadow-md hover:shadow-lg active:scale-[0.98] transition-all flex items-center justify-center disabled:opacity-70"
+                                className="w-full py-3 bg-gradient-to-r from-red-500 to-red-600 text-white font-bold rounded-lg shadow-md hover:shadow-lg active:scale-[0.98] transition-all flex items-center justify-center disabled:opacity-70"
                             >
                                 {isAnalyzing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5 mr-2" />}
                                 {isAnalyzing ? '正在分析...' : '开始智能分析'}
@@ -137,8 +137,8 @@ export const AIAnalysis: React.FC = () => {
 
                  {/* Results */}
                  {aiResult && (
-                    <div className="bg-white rounded-xl shadow-sm border border-purple-100 p-5 animate-in fade-in duration-500">
-                         <div className="prose prose-purple prose-sm max-w-none text-gray-800 leading-relaxed whitespace-pre-wrap">
+                    <div className="bg-white rounded-xl shadow-sm border border-red-100 p-5 animate-in fade-in duration-500">
+                         <div className="prose prose-red prose-sm max-w-none text-gray-800 leading-relaxed whitespace-pre-wrap">
                             {aiResult}
                         </div>
                     </div>

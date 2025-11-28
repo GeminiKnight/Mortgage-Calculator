@@ -93,12 +93,12 @@ export const Result: React.FC = () => {
         <div className="grid grid-cols-2 gap-3">
              <button 
                 onClick={() => navigate('/ai-analysis', { state: { method } })}
-                className="py-3 bg-white border border-purple-200 rounded-xl shadow-sm flex flex-col items-center justify-center space-y-1 active:bg-purple-50 transition-colors group"
+                className="py-3 bg-white border border-red-200 rounded-xl shadow-sm flex flex-col items-center justify-center space-y-1 active:bg-red-50 transition-colors group"
              >
-                 <div className="bg-purple-100 p-1.5 rounded-full group-hover:bg-purple-200 transition-colors">
-                     <Sparkles className="w-5 h-5 text-purple-600" />
+                 <div className="bg-red-100 p-1.5 rounded-full group-hover:bg-red-200 transition-colors">
+                     <Sparkles className="w-5 h-5 text-red-600" />
                  </div>
-                 <span className="text-purple-700 font-bold text-xs">AI 智能分析</span>
+                 <span className="text-red-700 font-bold text-xs">AI 智能分析</span>
              </button>
              <button 
                 onClick={() => navigate('/prepayment', { state: { method } })}

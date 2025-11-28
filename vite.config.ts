@@ -12,7 +12,8 @@ export default defineConfig(({ mode }) => {
     // For generic deployment that works in subfolders:
     base: './',
     define: {
-      'process.env.API_KEY': JSON.stringify(env.API_KEY)
+      // Maps import.meta.env.VITE_API_KEY to the VITE_API_KEY or API_KEY environment variable
+      'import.meta.env.VITE_API_KEY': JSON.stringify(env.VITE_API_KEY || env.API_KEY)
     }
   };
 })
