@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { LoanType, CalculationMethod, RepaymentMethod, LoanParams, CalculationResult } from './types';
+import { LoanType, CalculationMethod, 
+  // RepaymentMethod, 
+  LoanParams, CalculationResult } from './types';
 import { 
-    DEFAULT_COMMERCIAL_RATE, 
-    DEFAULT_PROVIDENT_RATE, 
+    // DEFAULT_COMMERCIAL_RATE, 
+    // DEFAULT_PROVIDENT_RATE, 
     TERM_OPTIONS, 
     DOWN_PAYMENT_OPTIONS,
     COMMERCIAL_RATE_OPTIONS,
