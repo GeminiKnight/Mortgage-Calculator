@@ -37,6 +37,7 @@ export const AIAnalysis: React.FC = () => {
         setAIResult('');
 
         try {
+            // Initialization with named parameter apiKey from process.env
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
             
             const prompt = `
@@ -62,10 +63,11 @@ export const AIAnalysis: React.FC = () => {
             `;
 
             const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: prompt,
+                model: 'gemini-2.5-flash',
+                contents: prompt,
             });
 
+            // Use .text property directly
             setAIResult(response.text || "分析未能生成，请重试。");
         } catch (error) {
             console.error("AI Analysis Error:", error);
